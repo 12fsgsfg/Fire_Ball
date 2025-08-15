@@ -12,3 +12,4 @@ messages:
   status-enabled: "&aEnabled"
   status-disabled: "&cDisabled"
   status-message: "&eYour fireball feature status: {status}"
+  need-fireball-item: "&cYou need to hold a fire charge to launch a fireball!"

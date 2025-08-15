@@ -12,3 +12,4 @@ messages:
   status-enabled: "&a启用"
   status-disabled: "&c禁用"
   status-message: "&e你的火焰弹功能状态: {status}"
+  need-fireball-item: "&c你需要拿着火球才能发射！"

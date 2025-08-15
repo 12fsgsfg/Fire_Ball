@@ -3,10 +3,12 @@ package com.example.fireballplugin;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -18,18 +20,21 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-public class FireballPlugin extends JavaPlugin implements Listener {
+public class FireballPlugin extends JavaPlugin implements Listener, TabCompleter {
     private FileConfiguration langConfig;
     private String language;
     private float fireballPower;
@@ -39,6 +44,7 @@ public class FireballPlugin extends JavaPlugin implements Listener {
     private boolean enableRightClick;
     private boolean enableSpecialEffects;
     private boolean defaultFireballEnabled;
+    private boolean requireFireballItem;
     private final Map<UUID, Long> cooldowns = new HashMap<>();
     private final Map<UUID, Boolean> playerFireballEnabled = new HashMap<>();
     private final Random random = new Random();
@@ -58,6 +64,7 @@ public class FireballPlugin extends JavaPlugin implements Listener {
         
         // 注册重载命令
         getCommand("fireball").setExecutor(this);
+        getCommand("fireball").setTabCompleter(this);
         
         // 注册事件监听器
         getServer().getPluginManager().registerEvents(this, this);
@@ -74,7 +81,7 @@ public class FireballPlugin extends JavaPlugin implements Listener {
         reloadConfig();
         
         // 获取配置值
-        language = getConfig().getString("language", "zh_CN");
+        language = getConfig().getString("language", "zh_TW");
         fireballPower = (float) getConfig().getDouble("fireball.power", 1.0);
         fireballSpeed = (float) getConfig().getDouble("fireball.speed", 2.0);
         damageBlocks = getConfig().getBoolean("fireball.damage-blocks", true);
@@ -82,6 +89,7 @@ public class FireballPlugin extends JavaPlugin implements Listener {
         enableRightClick = getConfig().getBoolean("features.right-click", true);
         enableSpecialEffects = getConfig().getBoolean("features.special-effects", true);
         defaultFireballEnabled = getConfig().getBoolean("features.default-enabled", true);
+        requireFireballItem = getConfig().getBoolean("features.require-fireball-item", false);
         
         // 加载语言文件
         loadLanguage();
@@ -120,6 +128,22 @@ public class FireballPlugin extends JavaPlugin implements Listener {
      */
     private void setFireballEnabled(Player player, boolean enabled) {
         playerFireballEnabled.put(player.getUniqueId(), enabled);
+    }
+    
+    /**
+     * 检查玩家是否拿着火球
+     * @param player 玩家
+     * @return 如果拿着火球返回true，否则返回false
+     */
+    private boolean isHoldingFireball(Player player) {
+        if (!requireFireballItem) {
+            return true; // 如果不需要火球物品，直接返回true
+        }
+        
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        
+        return mainHand.getType() == Material.FIRE_CHARGE || offHand.getType() == Material.FIRE_CHARGE;
     }
 
     @Override
@@ -190,6 +214,12 @@ public class FireballPlugin extends JavaPlugin implements Listener {
                 return true;
             }
             
+            // 检查是否拿着火球
+            if (!isHoldingFireball(player)) {
+                player.sendMessage(getMessage("prefix") + getMessage("need-fireball-item"));
+                return true;
+            }
+            
             // 检查冷却时间
             if (!checkCooldown(player)) {
                         return true;
@@ -200,6 +230,38 @@ public class FireballPlugin extends JavaPlugin implements Listener {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> completions = new ArrayList<>();
+        
+        if (command.getName().equalsIgnoreCase("fireball")) {
+            if (args.length == 1) {
+                // 第一个参数的建议
+                if (sender.hasPermission("fireballplugin.toggle")) {
+                    completions.add("on");
+                    completions.add("off");
+                    completions.add("toggle");
+                }
+                if (sender.hasPermission("fireballplugin.status")) {
+                    completions.add("status");
+                }
+                if (sender.hasPermission("fireballplugin.reload")) {
+                    completions.add("reload");
+                }
+            }
+        }
+        
+        // 过滤匹配的选项
+        List<String> filtered = new ArrayList<>();
+        for (String completion : completions) {
+            if (completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
+                filtered.add(completion);
+            }
+        }
+        
+        return filtered;
     }
     
     /**
@@ -242,12 +304,40 @@ public class FireballPlugin extends JavaPlugin implements Listener {
         // 设置是否造成方块损坏
         fireball.setIsIncendiary(damageBlocks);
         
+        // 如果要求火球物品，消耗一个火球
+        if (requireFireballItem) {
+            consumeFireballItem(player);
+        }
+        
         // 添加发射特效
         if (enableSpecialEffects) {
             playLaunchEffects(player);
         }
         
         player.sendMessage(getMessage("prefix") + getMessage("fireball-launched"));
+    }
+    
+    /**
+     * 消耗火球物品
+     * @param player 玩家
+     */
+    private void consumeFireballItem(Player player) {
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        
+        if (mainHand.getType() == Material.FIRE_CHARGE) {
+            if (mainHand.getAmount() > 1) {
+                mainHand.setAmount(mainHand.getAmount() - 1);
+            } else {
+                player.getInventory().setItemInMainHand(null);
+            }
+        } else if (offHand.getType() == Material.FIRE_CHARGE) {
+            if (offHand.getAmount() > 1) {
+                offHand.setAmount(offHand.getAmount() - 1);
+            } else {
+                player.getInventory().setItemInOffHand(null);
+            }
+        }
     }
     
     /**
@@ -287,6 +377,11 @@ public class FireballPlugin extends JavaPlugin implements Listener {
         
         // 检查火焰弹是否启用
         if (!isFireballEnabled(player)) {
+            return;
+        }
+        
+        // 检查是否拿着火球
+        if (!isHoldingFireball(player)) {
             return;
         }
         

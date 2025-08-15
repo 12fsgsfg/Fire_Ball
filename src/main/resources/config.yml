@@ -20,6 +20,8 @@ features:
   special-effects: true
   # 玩家默认是否启用火焰弹功能 (默认: true)
   default-enabled: true
+  # 是否需要拿着火球物品才能发射 (默认: false)
+  require-fireball-item: false
 
 # 默认语言
 language: "zh_TW"
