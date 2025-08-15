@@ -1,0 +1,14 @@
+# English language file
+
+messages:
+  prefix: "&7[&6FireballPlugin&7] "
+  no-permission: "&cYou don't have permission to use this command!"
+  player-only: "&cOnly players can use this command!"
+  fireball-launched: "&aYou launched a fireball!"
+  cooldown: "&cYou need to wait {time} seconds to use this command again!"
+  reload-success: "&aPlugin configuration reloaded!"
+  fireball-enabled: "&aFireball feature has been enabled!"
+  fireball-disabled: "&cFireball feature has been disabled!"
+  status-enabled: "&aEnabled"
+  status-disabled: "&cDisabled"
+  status-message: "&eYour fireball feature status: {status}"

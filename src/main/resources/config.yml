@@ -1,0 +1,25 @@
+# FireballPlugin 配置文件
+
+# 火球设置
+fireball:
+  # 火球爆炸威力 (默认: 1.0)
+  power: 1.0
+  # 火球速度倍数 (默认: 2.0)
+  speed: 2.0
+  # 是否造成方块损坏 (默认: true)
+  damage-blocks: true
+
+# 冷却时间设置 (秒)
+cooldown: 5
+
+# 功能开关
+features:
+  # 是否启用右键发射火球功能
+  right-click: true
+  # 是否启用特殊效果
+  special-effects: true
+  # 玩家默认是否启用火焰弹功能 (默认: true)
+  default-enabled: true
+
+# 默认语言
+language: "zh_TW"

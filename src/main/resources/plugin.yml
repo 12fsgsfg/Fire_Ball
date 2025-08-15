@@ -1,0 +1,35 @@
+name: FireballPlugin
+version: 1.0
+main: com.example.fireballplugin.FireballPlugin
+api-version: '1.21'
+description: 一个允许玩家投掷火球的插件
+author: YourName
+
+commands:
+  fireball:
+    description: 发射一个火球或管理火焰弹功能
+    usage: |
+      /fireball - 发射一个火球
+      /fireball toggle - 切换火焰弹功能开关
+      /fireball on - 启用火焰弹功能
+      /fireball off - 禁用火焰弹功能
+      /fireball status - 查看火焰弹功能状态
+      /fireball reload - 重新加载插件配置
+    permission: fireballplugin.use
+    
+permissions:
+  fireballplugin.use:
+    description: 允许玩家使用火球命令
+    default: op
+  fireballplugin.toggle:
+    description: 允许玩家切换火焰弹功能开关
+    default: op
+  fireballplugin.status:
+    description: 允许玩家查看火焰弹功能状态
+    default: op
+  fireballplugin.reload:
+    description: 允许玩家重新加载插件配置
+    default: op
+  fireballplugin.rightclick:
+    description: 允许玩家通过右键点击发射火球
+    default: op

@@ -1,0 +1,14 @@
+# 中文(简体)语言文件
+
+messages:
+  prefix: "&7[&6火球插件&7] "
+  no-permission: "&c你没有权限使用此命令！"
+  player-only: "&c只有玩家才能使用此命令！"
+  fireball-launched: "&a你发射了一个火球！"
+  cooldown: "&c你需要等待 {time} 秒才能再次使用此命令！"
+  reload-success: "&a插件配置已重新加载！"
+  fireball-enabled: "&a火焰弹功能已启用！"
+  fireball-disabled: "&c火焰弹功能已禁用！"
+  status-enabled: "&a启用"
+  status-disabled: "&c禁用"
+  status-message: "&e你的火焰弹功能状态: {status}"
